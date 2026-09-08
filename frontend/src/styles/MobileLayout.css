@@ -1,0 +1,53 @@
+/* Mobile Layout and Responsive Safe Area Styles */
+
+/* Ensure safe margins around the viewport on mobile screens */
+@media (max-width: 639px) {
+  .app-main-content {
+    padding-left: 0.875rem !important;
+    padding-right: 0.875rem !important;
+    padding-top: 0.875rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  .mobile-card-wrapper {
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 1rem;
+  }
+
+  .mobile-modal-dialog {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    margin-left: 0.75rem !important;
+    margin-right: 0.75rem !important;
+    max-height: 88vh !important;
+    overflow-y: auto !important;
+    border-radius: 1rem !important;
+  }
+
+  /* Improved touch scroll for horizontal tabs on phones */
+  .mobile-scroll-tabs {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 0.5rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .mobile-scroll-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Table responsive scroll containers on mobile */
+  .mobile-table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0.75rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+}

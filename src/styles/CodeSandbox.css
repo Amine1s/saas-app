@@ -1,0 +1,33 @@
+/* CodeSandbox Component Styles */
+
+.codesandbox-container {
+  transition: all 0.3s ease;
+}
+
+.codesandbox-code-block {
+  font-family: var(--font-mono, "JetBrains Mono", monospace);
+}
+
+@media (max-width: 639px) {
+  .codesandbox-container {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+
+  .codesandbox-tabs {
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .codesandbox-tab-btn {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.625rem;
+  }
+
+  .codesandbox-code-block {
+    font-size: 0.7rem;
+    padding: 0.75rem;
+    overflow-x: auto;
+    border-radius: 0.75rem;
+  }
+}

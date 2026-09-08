@@ -1,0 +1,33 @@
+/* Login Component Styles */
+
+.login-page-container {
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.login-card {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.login-input {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (max-width: 639px) {
+  .login-page-container {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+  }
+
+  .login-card {
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
+    padding: 1.25rem;
+    border-radius: 1.25rem;
+  }
+}

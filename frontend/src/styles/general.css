@@ -1,0 +1,47 @@
+.light-mode input,
+.light-mode textarea,
+.light-mode select {
+  background-color: #d7dde0 !important;
+  border-color: #b8c3c8 !important;
+  color: #526c64 !important;
+}
+
+.light-mode input::placeholder,
+.light-mode textarea::placeholder {
+  color: #82958e !important;
+}
+
+.light-mode [class~="text-slate-800"],
+.light-mode [class~="text-slate-700"],
+.light-mode [class~="text-slate-600"],
+.light-mode [class~="text-slate-500"],
+.light-mode [class~="text-slate-400"],
+.light-mode [class~="text-[#064E3B]"] {
+  color: #344b44 !important;
+}
+
+/* Scrollbar utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom modern scrollbar for data tables and horizontal lists */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(6, 78, 59, 0.1);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.35);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.65);
+}

@@ -1,0 +1,9 @@
+.login-screen.light-mode {
+  background: linear-gradient(135deg, #dfe4e8 0%, #eef1f3 52%, #f8fafb 100%);
+  color: #1f2937;
+}
+
+.login-screen.dark-mode {
+  background: #031510;
+  color: #d1fae5;
+}

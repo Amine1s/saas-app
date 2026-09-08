@@ -1,0 +1,28 @@
+/* Sidebar Component Styles */
+
+.sidebar-container {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-logo-icon {
+  background: #10B981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.sidebar-nav-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.sidebar-nav-item:hover {
+  transform: translateX(-2px);
+}
+
+@media (max-width: 767px) {
+  .sidebar-container {
+    top: 0;
+    bottom: 0;
+    right: 0;
+    height: 100vh;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.35);
+  }
+}

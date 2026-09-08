@@ -1,0 +1,8 @@
+{
+  "name": "Remix Micro-SaaS API Sandbox",
+  "description": "بيئة تفاعلية لعرض وتجربة كود الاتصال بقاعدة البيانات وAPI إضافة المنتجات وتحديث الكمية في المخزن للمتاجر الصغيرة.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

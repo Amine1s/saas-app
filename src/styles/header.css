@@ -1,0 +1,68 @@
+/* Header Component Styles */
+
+.header-container {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.header-title {
+  color: #064e3b;
+}
+
+.header-subtitle {
+  color: #64748b;
+}
+
+.header-user-name {
+  color: #064e3b;
+}
+
+.header-logout-btn {
+  color: #dc2626;
+  border-color: #fee2e2;
+  background-color: rgba(254, 242, 242, 0.6);
+}
+
+.header-logout-btn:hover {
+  background-color: #fee2e2;
+}
+
+/* Dark Mode Overrides for Header */
+.header-container.dark-mode .header-title {
+  color: #6ee7b7;
+}
+
+.header-container.dark-mode .header-subtitle {
+  color: rgba(52, 211, 153, 0.7);
+}
+
+.header-container.dark-mode .header-user-name {
+  color: #ffffff;
+}
+
+.header-container.dark-mode .header-logout-btn {
+  color: #f87171;
+  border-color: rgba(127, 29, 29, 0.4);
+  background-color: rgba(69, 10, 10, 0.25);
+}
+
+.header-container.dark-mode .header-logout-btn:hover {
+  color: #fca5a5;
+  background-color: rgba(69, 10, 10, 0.6);
+}
+
+.header-badge {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+@media (max-width: 639px) {
+  .header-container {
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    margin: 0.375rem 0.375rem 0.5rem 0.375rem;
+    border-radius: 0.875rem;
+  }
+}
+

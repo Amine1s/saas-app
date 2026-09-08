@@ -1,0 +1,28 @@
+/* AddProductModal Component Styles */
+
+.modal-backdrop {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.modal-card {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 639px) {
+  .modal-backdrop {
+    padding: 0.75rem !important;
+  }
+
+  .modal-card {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    margin-left: 0.5rem !important;
+    margin-right: 0.5rem !important;
+    padding: 1.25rem !important;
+    border-radius: 1rem !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+}
