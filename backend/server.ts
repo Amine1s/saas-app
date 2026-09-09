@@ -5,26 +5,354 @@ import path from "path";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
-import {
-  Product,
-  Invoice,
-  StoreActivity,
-  ChartPoint,
-  Warehouse,
-  Supplier,
-  Customer,
-  Category,
-  StockMovement,
-  AppUser,
-} from "./types.js";
-import {
-  getFirestoreDb,
-  fetchCollection,
-  setFirestoreDoc,
-  deleteFirestoreDoc,
-  clearFirestoreCollection,
-  seedInitialFirestoreData,
-} from "./firestoreDb.js";
+import { initializeApp, getApps, cert } from "firebase-admin/app";
+import { getFirestore, Firestore } from "firebase-admin/firestore";
+
+export type UserRole = "admin" | "manager" | "cashier";
+
+export interface UserSession {
+  id?: string;
+  username: string;
+  name: string;
+  role: UserRole;
+  warehouseId?: string;
+  warehouseName?: string;
+}
+
+export interface AppUser {
+  id: string;
+  username: string;
+  password?: string;
+  name: string;
+  role: UserRole;
+  isActive: boolean;
+  warehouseId?: string;
+  warehouseName?: string;
+  createdAt?: string;
+}
+
+export interface Warehouse {
+  id: string;
+  name: string;
+  location: string;
+  capacity: number;
+  description: string;
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+  company: string;
+  phone: string;
+  email: string;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  taxNumber?: string;
+}
+
+export interface StockMovement {
+  id: string;
+  type: "in" | "out";
+  productId: string;
+  productName: string;
+  quantity: number;
+  warehouseId: string;
+  warehouseName: string;
+  notes: string;
+  timestamp: string;
+  recordedBy: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  price: number;
+  quantity: number;
+  description: string;
+  category: string;
+  warehouseId?: string;
+  supplierId?: string;
+}
+
+export interface InvoiceItem {
+  productId: string;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+export interface Invoice {
+  id: string;
+  customerName: string;
+  invoiceDate: string;
+  status: "paid" | "partial" | "refunded";
+  items: InvoiceItem[];
+  totalAmount: number;
+  amountPaid: number;
+  paymentMethod: string;
+}
+
+export interface ChartPoint {
+  label: string;
+  sales: number;
+  invoices: number;
+}
+
+export interface StoreActivity {
+  id: string;
+  type:
+    | "add_product"
+    | "add_invoice"
+    | "refund_invoice"
+    | "stock_update"
+    | "system"
+    | "edit_product"
+    | "delete_product"
+    | "add_category"
+    | "edit_category"
+    | "delete_category";
+  message: string;
+  timestamp: string;
+  meta?: string;
+  entityType?:
+    | "product"
+    | "category"
+    | "invoice"
+    | "user"
+    | "warehouse"
+    | "general";
+  action?: "create" | "update" | "delete" | "other";
+  performedBy?: string;
+  performerRole?: string;
+  itemName?: string;
+}
+
+let dbInstance: Firestore | null = null;
+let isFirestoreInitialized = false;
+
+function getFirestoreDb(): Firestore | null {
+  if (isFirestoreInitialized) {
+    return dbInstance;
+  }
+  isFirestoreInitialized = true;
+
+  try {
+    const serviceAccountJson =
+      process.env.FIREBASE_SERVICE_ACCOUNT ||
+      process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    if (serviceAccountJson) {
+      try {
+        const parsed =
+          typeof serviceAccountJson === "string"
+            ? JSON.parse(serviceAccountJson)
+            : serviceAccountJson;
+        if (getApps().length === 0) {
+          initializeApp({ credential: cert(parsed) });
+        }
+        dbInstance = getFirestore();
+        console.log(
+          "[Firestore] Connected via FIREBASE_SERVICE_ACCOUNT JSON successfully.",
+        );
+        return dbInstance;
+      } catch (err) {
+        console.error(
+          "[Firestore] Failed parsing FIREBASE_SERVICE_ACCOUNT JSON:",
+          err,
+        );
+      }
+    }
+
+    const projectId =
+      process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+    if (projectId && clientEmail && privateKey) {
+      const formattedKey = privateKey.replace(/\\n/g, "\n");
+      if (getApps().length === 0) {
+        initializeApp({
+          credential: cert({
+            projectId,
+            clientEmail,
+            privateKey: formattedKey,
+          }),
+        });
+      }
+      dbInstance = getFirestore();
+      console.log(
+        `[Firestore] Connected via Service Account credentials for project "${projectId}".`,
+      );
+      return dbInstance;
+    }
+
+    if (projectId) {
+      if (getApps().length === 0) {
+        initializeApp({ projectId });
+      }
+      dbInstance = getFirestore();
+      console.log(`[Firestore] Initialized with Project ID "${projectId}".`);
+      return dbInstance;
+    }
+
+    console.log(
+      "[Firestore] No Firestore credentials found in environment variables. Falling back to in-memory state.",
+    );
+    return null;
+  } catch (error) {
+    console.warn(
+      "[Firestore] Could not connect to Firestore, fallback to in-memory store:",
+      error,
+    );
+    dbInstance = null;
+    return null;
+  }
+}
+
+async function fetchCollection<T>(collectionName: string): Promise<T[]> {
+  const db = getFirestoreDb();
+  if (!db) return [];
+
+  try {
+    const snapshot = await db.collection(collectionName).get();
+    if (snapshot.empty) return [];
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as T);
+  } catch (err) {
+    console.error(
+      `[Firestore] Error fetching collection "${collectionName}":`,
+      err,
+    );
+    return [];
+  }
+}
+
+async function setFirestoreDoc(
+  collectionName: string,
+  docId: string,
+  data: any,
+): Promise<boolean> {
+  const db = getFirestoreDb();
+  if (!db) return false;
+
+  try {
+    await db.collection(collectionName).doc(docId).set(data, { merge: true });
+    return true;
+  } catch (err) {
+    console.error(
+      `[Firestore] Error writing doc "${docId}" to "${collectionName}":`,
+      err,
+    );
+    return false;
+  }
+}
+
+async function deleteFirestoreDoc(
+  collectionName: string,
+  docId: string,
+): Promise<boolean> {
+  const db = getFirestoreDb();
+  if (!db) return false;
+
+  try {
+    await db.collection(collectionName).doc(docId).delete();
+    return true;
+  } catch (err) {
+    console.error(
+      `[Firestore] Error deleting doc "${docId}" from "${collectionName}":`,
+      err,
+    );
+    return false;
+  }
+}
+
+async function clearFirestoreCollection(
+  collectionName: string,
+): Promise<boolean> {
+  const db = getFirestoreDb();
+  if (!db) return false;
+
+  try {
+    const snap = await db.collection(collectionName).get();
+    if (snap.empty) return true;
+    const batch = db.batch();
+    snap.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+    return true;
+  } catch (err) {
+    console.error(
+      `[Firestore] Error clearing collection "${collectionName}":`,
+      err,
+    );
+    return false;
+  }
+}
+
+async function seedInitialFirestoreData(initialData: {
+  products: Product[];
+  invoices: Invoice[];
+  activities: StoreActivity[];
+  warehouses: Warehouse[];
+  suppliers: Supplier[];
+  customers: Customer[];
+  categories: Category[];
+  stockMovements: StockMovement[];
+}) {
+  const db = getFirestoreDb();
+  if (!db) return;
+
+  try {
+    const prodsSnap = await db.collection("products").limit(1).get();
+    if (prodsSnap.empty && initialData.products.length > 0) {
+      console.log(
+        "[Firestore] Seeding initial data to Firestore collections...",
+      );
+      const batch = db.batch();
+
+      initialData.products.forEach((p) => {
+        batch.set(db.collection("products").doc(p.id), p);
+      });
+      initialData.invoices.forEach((inv) => {
+        batch.set(db.collection("invoices").doc(inv.id), inv);
+      });
+      initialData.warehouses.forEach((w) => {
+        batch.set(db.collection("warehouses").doc(w.id), w);
+      });
+      initialData.suppliers.forEach((s) => {
+        batch.set(db.collection("suppliers").doc(s.id), s);
+      });
+      initialData.customers.forEach((c) => {
+        batch.set(db.collection("customers").doc(c.id), c);
+      });
+      initialData.categories.forEach((cat) => {
+        batch.set(db.collection("categories").doc(cat.id), cat);
+      });
+      initialData.stockMovements.forEach((m) => {
+        batch.set(db.collection("stock_movements").doc(m.id), m);
+      });
+      initialData.activities.forEach((a) => {
+        batch.set(db.collection("activities").doc(a.id), a);
+      });
+
+      await batch.commit();
+      console.log(
+        "[Firestore] Initial data successfully seeded into Firestore.",
+      );
+    }
+  } catch (err) {
+    console.error("[Firestore] Failed seeding data to Firestore:", err);
+  }
+}
 
 dotenv.config();
 
