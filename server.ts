@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import path from "path";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { createServer as createViteServer } from "vite";
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getFirestore, Firestore } from "firebase-admin/firestore";
 
@@ -955,9 +954,7 @@ async function syncFromFirestore() {
   }
 }
 
-async function startServer() {
-  await syncFromFirestore();
-
+function registerApiRoutes() {
   // فحص حالة السيرفر وقاعدة البيانات
   app.get("/api/health", (req, res) => {
     const db = getFirestoreDb();
@@ -2201,18 +2198,33 @@ async function startServer() {
       },
     });
   });
+}
+
+// تسجيل مسارات الـ API فوراً لضمان جاهزيتها لحظياً في دوال Serverless
+registerApiRoutes();
+
+async function startServer() {
+  // مزامنة البيانات مع Firestore في الخلفية
+  syncFromFirestore().catch((err) => {
+    console.warn("[Firestore] Background sync error:", err);
+  });
 
   // -------------------------------------------------------------
   // 11. تكامل خادم Vite ومخرجات البناء (React Vite Integration)
   // -------------------------------------------------------------
 
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+    const dynamicVite = "vite";
+    const { createServer: createViteServer } = await Function(
+      "m",
+      "return import(m)",
+    )(dynamicVite);
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
-  } else {
+  } else if (!process.env.VERCEL) {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
@@ -2220,7 +2232,7 @@ async function startServer() {
     });
   }
 
-  if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+  if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
     app.listen(PORT, "0.0.0.0", () => {
       console.log(
         `[Backend Server] Server running successfully on http://localhost:${PORT}`,

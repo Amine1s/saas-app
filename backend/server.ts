@@ -955,9 +955,7 @@ async function syncFromFirestore() {
   }
 }
 
-async function startServer() {
-  await syncFromFirestore();
-
+function registerApiRoutes() {
   // فحص حالة السيرفر وقاعدة البيانات
   app.get("/api/health", (req, res) => {
     const db = getFirestoreDb();
@@ -2202,11 +2200,7 @@ async function startServer() {
     });
   });
 
-  // -------------------------------------------------------------
-
-  // -------------------------------------------------------------
   // تكامل الخادم المستقل (Standalone API Server & Vercel Handler)
-  // -------------------------------------------------------------
   app.get("/", (req, res) => {
     res.json({
       status: "online",
@@ -2222,8 +2216,18 @@ async function startServer() {
       message: "SaaS Inventory ERP API",
     });
   });
+}
 
-  if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+// تسجيل مسارات الـ API فوراً لضمان جاهزيتها لحظياً في دوال Serverless
+registerApiRoutes();
+
+async function startServer() {
+  // مزامنة البيانات مع Firestore في الخلفية
+  syncFromFirestore().catch((err) => {
+    console.warn("[Firestore] Background sync error:", err);
+  });
+
+  if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
     const PORT = Number(process.env.PORT) || 3000;
     app.listen(PORT, "0.0.0.0", () => {
       console.log(
