@@ -1,11 +1,26 @@
 // تعريف الأنواع وهياكل البيانات المستخدمة في خادم الباك إند
 
-export type UserRole = 'admin' | 'manager' | 'cashier';
+export type UserRole = "admin" | "manager" | "cashier";
 
 export interface UserSession {
+  id?: string;
   username: string;
   name: string;
   role: UserRole;
+  warehouseId?: string;
+  warehouseName?: string;
+}
+
+export interface AppUser {
+  id: string;
+  username: string;
+  password?: string;
+  name: string;
+  role: UserRole;
+  isActive: boolean;
+  warehouseId?: string;
+  warehouseName?: string;
+  createdAt?: string;
 }
 
 export interface Warehouse {
@@ -34,7 +49,7 @@ export interface Customer {
 
 export interface StockMovement {
   id: string;
-  type: 'in' | 'out';
+  type: "in" | "out";
   productId: string;
   productName: string;
   quantity: number;
@@ -74,7 +89,7 @@ export interface Invoice {
   id: string;
   customerName: string;
   invoiceDate: string;
-  status: 'paid' | 'partial' | 'refunded';
+  status: "paid" | "partial" | "refunded";
   items: InvoiceItem[];
   totalAmount: number;
   amountPaid: number;
@@ -89,8 +104,29 @@ export interface ChartPoint {
 
 export interface StoreActivity {
   id: string;
-  type: 'add_product' | 'add_invoice' | 'refund_invoice' | 'stock_update' | 'system';
+  type:
+    | "add_product"
+    | "add_invoice"
+    | "refund_invoice"
+    | "stock_update"
+    | "system"
+    | "edit_product"
+    | "delete_product"
+    | "add_category"
+    | "edit_category"
+    | "delete_category";
   message: string;
   timestamp: string;
   meta?: string;
+  entityType?:
+    | "product"
+    | "category"
+    | "invoice"
+    | "user"
+    | "warehouse"
+    | "general";
+  action?: "create" | "update" | "delete" | "other";
+  performedBy?: string;
+  performerRole?: string;
+  itemName?: string;
 }

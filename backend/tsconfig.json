@@ -11,5 +11,5 @@
     "outDir": "./dist",
     "rootDir": "./"
   },
-  "include": ["server.ts", "types.ts", "api/**/*"]
+  "include": ["server.ts", "types.ts", "firestoreDb.ts", "api/**/*"]
 }
